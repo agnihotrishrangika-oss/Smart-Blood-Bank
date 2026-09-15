@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blood Bank Management System</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            background: linear-gradient(135deg, #2d0104, #e52d27);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            overflow: hidden;
+        }
+
+        /* Main Container */
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.12);
+            padding: 50px;
+            border-radius: 30px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            max-width: 450px;
+            z-index: 1  ;
+            animation: fadeIn 1.5s ease;
+        }
+
+        h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        h1 span {
+            color: #ffd6d6;
+        }
+
+        p {
+            font-size: 16px;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn-login {
+            background: white;
+            color: #b31217;
+        }
+
+        .btn-register {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Blood Rain Drops */
+        .blood-drop {
+            position: absolute;
+            top: -30px;
+            background: radial-gradient(circle at 30% 30%, #ff5c5c, #b31217);
+            border-radius: 50%;
+            opacity: 0.8;
+            animation-name: rain;
+            animation-timing-function: linear;
+            pointer-events: none;
+        }
+
+        @keyframes rain {
+            to {
+                transform: translateY(120vh);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1>🩸 <span>Blood Bank</span></h1>
+        <p>
+            Connecting Donors, Patients & Hospitals <br>
+            Because Every Drop Saves a Life ❤️
+        </p>
+
+        <div class="btn-group">
+            <button class="btn btn-login">Login</button>
+            <button class="btn btn-register">Register</button>
+        </div>
+    </div>
+
+    <!-- Blood Rain Script -->
+    <script>
+        const body = document.body;
+
+        function createBloodDrop() {
+            const drop = document.createElement("div");
+            drop.classList.add("blood-drop");
+
+            // Random size
+            const size = Math.random() * 10 + 6;
+            drop.style.width = size + "px";
+            drop.style.height = size + "px";
+
+            // Random horizontal position
+            drop.style.left = Math.random() * 100 + "vw";
+
+            // Random fall speed
+            const duration = Math.random() * 3 + 2;
+            drop.style.animationDuration = duration + "s";
+
+            body.appendChild(drop);
+
+            // Remove after falling
+            setTimeout(() => {
+                drop.remove();
+            }, duration * 1000);
+        }
+
+        // Create continuous blood rain
+        setInterval(createBloodDrop, 150);
+
+        // Button navigation (optional)
+        document.querySelector(".btn-login").onclick = () => {
+            window.location.href = "Login.html";
+        };
+
+        document.querySelector(".btn-register").onclick = () => {
+            window.location.href = "Registration.html";
+        };
+    </script>
+
+</body>
+</html>

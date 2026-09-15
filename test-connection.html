@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Bank - Connection Tester</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .test-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .test-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .test-btn:active {
+            transform: translateY(0);
+        }
+
+        .test-btn.danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .test-btn.danger:hover {
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.6);
+        }
+
+        .result {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #333;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        .result.success {
+            border-left-color: #28a745;
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .result.error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .result.loading {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #333;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #0c5ba7;
+        }
+
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .quick-links {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .quick-links a {
+            background: #e9ecef;
+            color: #667eea;
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .quick-links a:hover {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🧪 Blood Bank Connection Tester</h1>
+    <p class="subtitle">Test your MongoDB connection and database operations</p>
+
+    <div class="info-box">
+        ℹ️ Make sure your Node.js server is running on http://localhost:5000
+    </div>
+
+    <div class="test-grid">
+        <button class="test-btn" onclick="testConnection()">
+            🔗 Test Connection
+        </button>
+        <button class="test-btn" onclick="getStats()">
+            📊 Get Stats
+        </button>
+        <button class="test-btn" onclick="getAllBlood()">
+            🩸 View Blood
+        </button>
+        <button class="test-btn" onclick="getAllUsers()">
+            👥 View Users
+        </button>
+        <button class="test-btn" onclick="addTestBlood()">
+            ➕ Add Test Blood
+        </button>
+        <button class="test-btn danger" onclick="clearAllData()">
+            🗑️ Clear Data
+        </button>
+    </div>
+
+    <div id="result" class="result"></div>
+
+    <div class="quick-links">
+        <a href="http://localhost:5000/test/connection">Direct API Call</a>
+        <a href="Blood_Bank.html">← Back to Home</a>
+    </div>
+</div>
+
+<script>
+    const BASE_URL = 'http://localhost:5000';
+
+    async function makeRequest(endpoint, method = 'GET', showLoading = true) {
+        const resultDiv = document.getElementById('result');
+        
+        if (showLoading) {
+            resultDiv.className = 'result show loading';
+            resultDiv.innerHTML = '<span class="loading-spinner"></span>Loading...';
+        }
+
+        try {
+            const options = { method };
+            if (method === 'POST') {
+                options.headers = { 'Content-Type': 'application/json' };
+            }
+
+            const response = await fetch(`${BASE_URL}${endpoint}`, options);
+            const data = await response.json();
+
+            resultDiv.className = response.ok ? 'result show success' : 'result show error';
+            resultDiv.innerHTML = `<strong>${response.ok ? '✅ Success' : '❌ Error'}:</strong>\n\n${JSON.stringify(data, null, 2)}`;
+            
+            return data;
+        } catch (error) {
+            resultDiv.className = 'result show error';
+            resultDiv.innerHTML = `<strong>❌ Request Failed:</strong>\n\n${error.message}\n\n<strong>Check if:</strong>\n• Server is running on port 5000\n• MongoDB connection is working\n• No firewall blocking localhost:5000`;
+        }
+    }
+
+    async function testConnection() {
+        await makeRequest('/test/connection');
+    }
+
+    async function getAllBlood() {
+        await makeRequest('/test/get-all-blood');
+    }
+
+    async function getAllUsers() {
+        await makeRequest('/test/get-all-users');
+    }
+
+    async function getStats() {
+        await makeRequest('/test/db-stats');
+    }
+
+    async function addTestBlood() {
+        if (confirm('Add test blood data (O+ 500ml)?')) {
+            await makeRequest('/test/add-blood', 'POST');
+        }
+    }
+
+    async function clearAllData() {
+        if (confirm('⚠️ This will DELETE ALL data!\n\nAre you sure?')) {
+            if (confirm('⚠️ Last chance! Delete everything?')) {
+                await makeRequest('/test/clear-data', 'POST');
+            }
+        }
+    }
+
+    // Auto-test connection on load
+    window.addEventListener('load', () => {
+        console.log('Testing connection...');
+        testConnection();
+    });
+</script>
+
+</body>
+</html>

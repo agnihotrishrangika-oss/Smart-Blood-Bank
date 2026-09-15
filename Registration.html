@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blood Bank Registration (India)</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background:
+                linear-gradient(rgba(120, 0, 0, 0.65), rgba(0, 0, 0, 0.7)),
+                url("blood-bg.jpg") no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            width: 380px;
+            border-radius: 12px;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+        }
+
+        h2 {
+            text-align: center;
+            color: #c62828;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 12px;
+            display: block;
+        }
+
+        input {
+            width: 100%;
+            padding: 9px;
+            margin-top: 5px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        .phone-box {
+            display: flex;
+        }
+
+        .country-code {
+            padding: 9px;
+            background: #eee;
+            border: 1px solid #ccc;
+            border-radius: 6px 0 0 6px;
+            font-weight: bold;
+            width: 55px;
+            text-align: center;
+        }
+
+        .phone-input {
+            border-radius: 0 6px 6px 0;
+            border-left: none;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            background: #c62828;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #a81f1f;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>🩸 Blood Bank Registration</h2>
+
+    <label>Full Name</label>
+    <input type="text" id="name" placeholder="Only alphabets allowed">
+
+    <label>Email Address</label>
+    <input type="email" id="email" placeholder="example@gmail.com">
+
+    <label>Create Password</label>
+    <input type="password" id="password" placeholder="Minimum 8 characters">
+
+    <label>Phone Number (India)</label>
+    <div class="phone-box">
+        <div class="country-code">+91</div>
+        <input
+            type="text"
+            id="phone"
+            class="phone-input"
+            placeholder="10-digit mobile number"
+            maxlength="10"
+            oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+        >
+    </div>
+
+    <button onclick="submitForm()">Register</button>
+
+    <p style="text-align: center; margin-top: 15px;">
+        Already have an account?
+        <a href="Login.html" style="color: #c50000; font-weight: bold; text-decoration: none;">Login here</a>
+    </p>
+</div>
+
+<script>
+function submitForm() {
+
+    let name = document.getElementById("name").value.trim();
+    let email = document.getElementById("email").value.trim();
+    let password = document.getElementById("password").value;
+    let phone = document.getElementById("phone").value.trim();
+
+    // 🔴 ALL FIELDS MANDATORY
+    if (name === "" || email === "" || password === "" || phone === "") {
+        alert("⚠ All fields are mandatory");
+        return;
+    }
+
+    // NAME VALIDATION
+    if (!/^[A-Za-z\s]+$/.test(name)) {
+        alert("❌ Name should contain only alphabets");
+        return;
+    }
+
+    // EMAIL VALIDATION
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert("❌ Your email is not valid");
+        return;
+    }
+
+    // PASSWORD VALIDATION
+    if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) {
+        alert("❌ Password must be at least 8 characters with letters & numbers");
+        return;
+    }
+
+    // PHONE VALIDATION (INDIA)
+    if (!/^[6-9][0-9]{9}$/.test(phone)) {
+        alert("❌ Enter valid Indian mobile number");
+        return;
+    }
+
+    // Send to backend
+    registerUser(name, email, password, phone);
+}
+
+async function registerUser(fullName, email, password, phone) {
+    try {
+        const response = await fetch('http://localhost:5000/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fullName, email, password, phone: '+91' + phone })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert("✅ Registration Successful!");
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            
+            // Clear form
+            document.getElementById("name").value = "";
+            document.getElementById("email").value = "";
+            document.getElementById("password").value = "";
+            document.getElementById("phone").value = "";
+            
+            // Redirect to login
+            setTimeout(() => {
+                window.location.href = "Login.html";
+            }, 1500);
+        } else {
+            alert("❌ " + (data.msg || 'Registration failed'));
+        }
+    } catch (error) {
+        alert("❌ Error: " + error.message);
+    }
+}
+</script>
+
+</body>
+</html>

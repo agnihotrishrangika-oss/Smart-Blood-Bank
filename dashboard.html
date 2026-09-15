@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Bank Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background:
+                linear-gradient(rgba(120, 0, 0, 0.65), rgba(0, 0, 0, 0.7)),
+                url("blood-bg.jpg") no-repeat center center fixed;
+            background-size: cover;
+            color: #333;
+        }
+
+        .navbar {
+            background: rgba(198, 40, 40, 0.95);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.6);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(8px);
+        }
+
+        .navbar h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navbar-right {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+
+        .logout-btn {
+            background: #fff;
+            color: #c62828;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .conbackground: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            max-width: 900px;
+            margin: 40px autoo;
+            padding: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 35px;
+            align-items: center;
+            width: 100%;
+            padding: 20px 0;
+        }
+
+        .menu-toggle {
+            background: #c62828;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .menu-toggle span {
+            width: 28px;
+            height: 3px;
+            background: white;
+            border-radius: 2px;
+            transition: 0.3s;
+        }
+
+        .menu-toggle:hover {
+            background: #a81f1f;
+            transform: scale(1.05);
+        }
+
+        .tabs-menu {
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            animation: slideDown 0.3s ease;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .tabs-menu.active {
+            display: flex;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tab-btn {
+            padding: 14px 24px;
+            border: 2px solid #ddd;
+            background: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            color: #666;
+            border-radius: 8px;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            min-width: fit-content;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .tab-btn:hover {
+            color: #c62828;
+            border-color: #c62828;
+            background: rgba(198, 40, 40, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            color: white;
+            background: #c62828;
+            border-color: #c62828;
+            box-shadow: 0 4px 12px rgba(198, 40, 40, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 6px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 12px;
+            display: block;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 9px;
+            margin-top: 5px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #c62828;
+            box-shadow: 0 0 5px rgba(198, 40, 40, 0.2);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .blood-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .blood-btn {
+            padding: 10px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .blood-btn.selected {
+            background: #c62828;
+            color: white;
+            border-color: #c62828;
+        }
+
+        .btn {
+            background: #c62828;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: #a81f1f;
+        }
+
+        .btn-secondary {
+            background: #667eea;
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .blood-inventory {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .blood-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .blood-card .type {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .blood-card .quantity {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .hospitals-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .hospital-card {
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 8px;
+            padding: 15px;
+            transition: 0.3s;
+        }
+
+        .hospital-card:hover {
+            border-color: #c62828;
+            box-shadow: 0 4px 12px rgba(198, 40, 40, 0.2);
+        }
+
+        .hospital-card h3 {
+            color: #c62828;
+            margin-bottom: 10px;
+        }
+
+        .hospital-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .info-item i {
+            color: #c62828;
+            width: 20px;
+        }
+
+        #map {
+            width: 100%;
+            height: 400px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #c62828;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        /* Chatbot Widget Styles */
+        .chatbot-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999;
+        }
+
+        .chatbot-toggle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #c62828 0%, #8b0000 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(198, 40, 40, 0.4);
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chatbot-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(198, 40, 40, 0.6);
+        }
+
+        .chatbot-container {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 380px;
+            height: 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);
+            display: none;
+            flex-direction: column;
+            animation: slideUp 0.3s ease;
+        }
+
+        .chatbot-container.active {
+            display: flex;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chatbot-header {
+            background: linear-gradient(135deg, #c62828 0%, #8b0000 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-header h3 {
+            margin: 0;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chatbot-close {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 0;
+        }
+
+        .chatbot-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #f9f9f9;
+        }
+
+        .message-item {
+            display: flex;
+            gap: 8px;
+            animation: messageSlide 0.3s ease;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-item.user {
+            justify-content: flex-end;
+        }
+
+        .message-item.bot {
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 280px;
+            padding: 10px 15px;
+            border-radius: 12px;
+            word-wrap: break-word;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .message-item.user .message-bubble {
+            background: #c62828;
+            color: white;
+            border-radius: 12px 12px 0 12px;
+        }
+
+        .message-item.bot .message-bubble {
+            background: #e8e8e8;
+            color: #333;
+            border-radius: 12px 12px 12px 0;
+        }
+
+        .chatbot-input-area {
+            padding: 12px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 8px;
+        }
+
+        .chatbot-input {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .chatbot-input:focus {
+            outline: none;
+            border-color: #c62828;
+        }
+
+        .chatbot-send {
+            background: #c62828;
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+
+        .chatbot-send:hover {
+            background: #8b0000;
+        }
+
+        .chatbot-loading {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .chatbot-loading span {
+            width: 8px;
+            height: 8px;
+            background: #999;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite;
+        }
+
+        .chatbot-loading span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .chatbot-loading span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        @media (max-width: 480px) {
+            .chatbot-container {
+                width: 100vw;
+                height: 70vh;
+                bottom: 0;
+                right: 0;
+                border-radius: 12px 12px 0 0;
+            }
+
+            .chatbot-toggle {
+                bottom: 30px;
+                right: 20px;
+            }
+        }
+
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                gap: 10px;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                padding-bottom: 8px;
+            }
+
+            .tab-btn {
+                padding: 12px 18px;
+                font-size: 13px;
+            }
+
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .navbar-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation Bar -->
+<div class="navbar">
+    <h2>🩸 Blood Bank Dashboard</h2>
+    <div class="navbar-right">
+        <div class="user-info">
+            <i class="fas fa-user-circle"></i>
+            <span id="userName">User</span>
+        </div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+</div>
+
+<!-- Main Container -->
+<div class="container">
+    <!-- Menu Toggle Button -->
+    <button class="menu-toggle" onclick="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- Tabs Menu -->
+    <div class="tabs tabs-menu" id="tabsMenu">
+        <button class="tab-btn active" onclick="switchTab('dashboard'); toggleMenu()">
+            <i class="fas fa-home"></i> Dashboard
+        </button>
+        <button class="tab-btn" onclick="switchTab('donate'); toggleMenu()">
+            <i class="fas fa-heart"></i> Donate Blood
+        </button>
+        <button class="tab-btn" onclick="switchTab('request'); toggleMenu()">
+            <i class="fas fa-hand-holding-heart"></i> Request Blood
+        </button>
+        <button class="tab-btn" onclick="switchTab('hospitals'); toggleMenu()">
+            <i class="fas fa-hospital"></i> Find Hospitals
+        </button>
+        <button class="tab-btn" onclick="switchTab('profile'); toggleMenu()">
+            <i class="fas fa-user"></i> Profile
+        </button>
+    </div>
+
+    <!-- Message Container -->
+    <div id="message" class="message"></div>
+
+    <!-- Dashboard Tab -->
+    <div id="dashboard" class="tab-content active">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3 id="totalDonations">0</h3>
+                <p>Total Donations</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="totalRequests">0</h3>
+                <p>Blood Requests</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="availableUnits">0</h3>
+                <p>Available Units</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🩸 Blood Inventory</h3>
+            <div class="blood-inventory" id="bloodInventory">
+                <div class="no-data">Loading...</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📊 Quick Stats</h3>
+            <div id="quickStats">Loading...</div>
+        </div>
+    </div>
+
+    <!-- Donate Blood Tab -->
+    <div id="donate" class="tab-content">
+        <div class="card">
+            <h3>🩸 Register Blood Donation</h3>
+            <form id="donationForm">
+                <div class="form-group">
+                    <label>Blood Type *</label>
+                    <div class="blood-types" id="donationBloodTypes">
+                        <!-- Generated by JS -->
+                    </div>
+                    <input type="hidden" id="donationBloodType">
+                </div>
+
+                <div class="form-group">
+                    <label>Quantity (ml) *</label>
+                    <input type="number" id="donationQuantity" placeholder="e.g., 450" min="100" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Expiry Date *</label>
+                    <input type="date" id="donationExpiry" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Your Location (Optional)</label>
+                    <input type="text" id="donationLocation" placeholder="Your city or area">
+                </div>
+
+                <button type="submit" class="btn">
+                    <i class="fas fa-plus"></i> Register Donation
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Request Blood Tab -->
+    <div id="request" class="tab-content">
+        <div class="card">
+            <h3>🩸 Request Blood</h3>
+            <form id="requestForm">
+                <div class="form-group">
+                    <label>Blood Type Needed *</label>
+                    <div class="blood-types" id="requestBloodTypes">
+                        <!-- Generated by JS -->
+                    </div>
+                    <input type="hidden" id="requestBloodType">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Quantity Needed (ml) *</label>
+                        <input type="number" id="requestQuantity" placeholder="e.g., 450" min="100" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Patient Name *</label>
+                        <input type="text" id="requestPatientName" placeholder="Patient name" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Hospital Name *</label>
+                        <input type="text" id="requestHospitalName" placeholder="Hospital name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Number *</label>
+                        <input type="tel" id="requestContact" placeholder="10-digit number" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Your Location (City) *</label>
+                    <input type="text" id="requestLocation" placeholder="Your city" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Medical Condition/Note</label>
+                    <textarea id="requestNote" placeholder="Brief medical condition..." rows="3"></textarea>
+                </div>
+
+                <button type="submit" class="btn">
+                    <i class="fas fa-search"></i> Find & Request Blood
+                </button>
+            </form>
+
+            <div id="requestResults" style="margin-top: 30px;"></div>
+        </div>
+    </div>
+
+    <!-- Find Hospitals Tab -->
+    <div id="hospitals" class="tab-content">
+        <div class="card">
+            <h3>🏥 Find Nearby Hospitals</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Your Location (City) *</label>
+                    <input type="text" id="hospitalLocation" placeholder="Enter your city" required>
+                </div>
+                <div class="form-group">
+                    <label style="visibility: hidden;">Search</label>
+                    <button type="button" class="btn" onclick="findNearbyHospitals()" style="width: 100%;">
+                        <i class="fas fa-search"></i> Find Hospitals
+                    </button>
+                </div>
+            </div>
+
+            <div id="map"></div>
+
+            <div id="hospitalsList" class="hospitals-list" style="margin-top: 20px;">
+                <div class="no-data">Enter your location and click Find Hospitals</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Tab -->
+    <div id="profile" class="tab-content">
+        <div class="card">
+            <h3>👤 My Profile</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="profileName" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="profileEmail" readonly>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" id="profilePhone" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Member Since</label>
+                    <input type="text" id="profileDate" readonly>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📋 My Donation History</h3>
+            <div id="donationHistory" style="margin-top: 15px;">
+                <div class="no-data">No donations yet</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📋 My Requests</h3>
+            <div id="requestHistory" style="margin-top: 15px;">
+                <div class="no-data">No requests yet</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+    const BLOOD_TYPES = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
+    const API_URL = 'http://localhost:5000/api';
+    let map = null;
+    let currentUser = null;
+
+    // Check authentication
+    window.addEventListener('load', () => {
+        const token = localStorage.getItem('token');
+        const user = localStorage.getItem('user');
+
+        if (!token || !user) {
+            window.location.href = 'Blood_Bank.html';
+            return;
+        }
+
+        currentUser = JSON.parse(user);
+        document.getElementById('userName').textContent = currentUser.fullName;
+        loadProfileData();
+        loadDashboardData();
+        generateBloodTypeButtons();
+        initMap();
+    });
+
+    function switchTab(tabName) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // Show selected tab
+        document.getElementById(tabName).classList.add('active');
+        event.target.closest('.tab-btn').classList.add('active');
+    }
+
+    function toggleMenu() {
+        const tabsMenu = document.getElementById('tabsMenu');
+        tabsMenu.classList.toggle('active');
+    }
+
+    function generateBloodTypeButtons() {
+        const donationContainer = document.getElementById('donationBloodTypes');
+        const requestContainer = document.getElementById('requestBloodTypes');
+
+        BLOOD_TYPES.forEach(type => {
+            const btn1 = document.createElement('button');
+            btn1.type = 'button';
+            btn1.className = 'blood-btn';
+            btn1.textContent = type;
+            btn1.onclick = () => selectBloodType('donation', type, btn1);
+            donationContainer.appendChild(btn1);
+
+            const btn2 = document.createElement('button');
+            btn2.type = 'button';
+            btn2.className = 'blood-btn';
+            btn2.textContent = type;
+            btn2.onclick = () => selectBloodType('request', type, btn2);
+            requestContainer.appendChild(btn2);
+        });
+    }
+
+    function selectBloodType(formType, type, element) {
+        event.preventDefault();
+        const container = element.parentElement;
+        container.querySelectorAll('.blood-btn').forEach(btn => btn.classList.remove('selected'));
+        element.classList.add('selected');
+
+        if (formType === 'donation') {
+            document.getElementById('donationBloodType').value = type;
+        } else {
+            document.getElementById('requestBloodType').value = type;
+        }
+    }
+
+    function loadDashboardData() {
+        // Fetch blood inventory
+        fetch(`${API_URL}/blood/available`)
+            .then(res => res.json())
+            .then(data => {
+                updateDashboard(data);
+            })
+            .catch(err => console.error(err));
+
+        // Fetch total donations
+        fetch(`${API_URL}/blood/donations/count`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('totalDonations').textContent = data.totalDonations;
+            })
+            .catch(err => console.error(err));
+
+        // Fetch total requests
+        fetch(`${API_URL}/blood/requests/count`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('totalRequests').textContent = data.totalRequests;
+            })
+            .catch(err => console.error(err));
+    }
+
+    function updateDashboard(bloodData) {
+        const inventory = document.getElementById('bloodInventory');
+        inventory.innerHTML = '';
+
+        const stats = {};
+        BLOOD_TYPES.forEach(type => {
+            stats[type] = 0;
+        });
+
+        bloodData.forEach(blood => {
+            stats[blood.bloodType] += blood.quantity;
+        });
+
+        let totalQuantity = 0;
+        BLOOD_TYPES.forEach(type => {
+            if (stats[type] > 0) {
+                const card = document.createElement('div');
+                card.className = 'blood-card';
+                card.innerHTML = `
+                    <div class="type">${type}</div>
+                    <div class="quantity">${stats[type]} ml available</div>
+                `;
+                inventory.appendChild(card);
+                totalQuantity += stats[type];
+            }
+        });
+
+        if (totalQuantity === 0) {
+            inventory.innerHTML = '<div class="no-data" style="grid-column: 1/-1;">No blood available currently</div>';
+        }
+
+        document.getElementById('availableUnits').textContent = totalQuantity;
+    }
+
+    function loadProfileData() {
+        document.getElementById('profileName').value = currentUser.fullName;
+        document.getElementById('profileEmail').value = currentUser.email;
+        document.getElementById('profilePhone').value = currentUser.phone;
+        document.getElementById('profileDate').value = new Date().toLocaleDateString();
+    }
+
+    // Donation Form
+    document.getElementById('donationForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const bloodType = document.getElementById('donationBloodType').value;
+        if (!bloodType) {
+            showMessage('Please select a blood type', 'error');
+            return;
+        }
+
+        const data = {
+            donorId: currentUser.id,
+            bloodType: bloodType,
+            quantity: parseInt(document.getElementById('donationQuantity').value),
+            expiryDate: document.getElementById('donationExpiry').value
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/blood/donate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                showMessage('✅ Blood donation registered successfully!', 'success');
+                document.getElementById('donationForm').reset();
+                document.querySelectorAll('#donationBloodTypes .blood-btn').forEach(btn => btn.classList.remove('selected'));
+                loadDashboardData();
+            } else {
+                showMessage('❌ ' + result.message, 'error');
+            }
+        } catch (error) {
+            showMessage('❌ Error: ' + error.message, 'error');
+        }
+    });
+
+    // Request Form
+    document.getElementById('requestForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const bloodType = document.getElementById('requestBloodType').value;
+        if (!bloodType) {
+            showMessage('Please select a blood type', 'error');
+            return;
+        }
+
+        const quantity = parseInt(document.getElementById('requestQuantity').value);
+        const location = document.getElementById('requestLocation').value;
+
+        try {
+            const response = await fetch(`${API_URL}/blood/type/${bloodType}`);
+            const available = await response.json();
+
+            let resultHTML = '<h4>Available Blood Units:</h4><div class="hospitals-list">';
+
+            if (available.length === 0) {
+                resultHTML += '<div class="no-data">No ' + bloodType + ' blood available. Try another type.</div>';
+            } else {
+                available.forEach(blood => {
+                    if (blood.quantity >= quantity) {
+                        resultHTML += `
+                            <div class="hospital-card">
+                                <h3>✅ Match Found!</h3>
+                                <div class="hospital-info">
+                                    <div class="info-item">
+                                        <i class="fas fa-droplet"></i>
+                                        <strong>Type:</strong> ${blood.bloodType}
+                                    </div>
+                                    <div class="info-item">
+                                        <i class="fas fa-chart-bar"></i>
+                                        <strong>Available:</strong> ${blood.quantity} ml
+                                    </div>
+                                    <div class="info-item">
+                                        <i class="fas fa-calendar"></i>
+                                        <strong>Expires:</strong> ${new Date(blood.expiryDate).toLocaleDateString()}
+                                    </div>
+                                </div>
+                                <button class="btn btn-secondary" style="margin-top: 10px; width: 100%;" 
+                                    onclick="confirmRequest('${blood._id}', '${bloodType}', ${quantity})">
+                                    Confirm Request
+                                </button>
+                            </div>
+                        `;
+                    }
+                });
+            }
+
+            resultHTML += '</div>';
+            document.getElementById('requestResults').innerHTML = resultHTML;
+
+        } catch (error) {
+            showMessage('❌ Error searching for blood: ' + error.message, 'error');
+        }
+    });
+
+    function confirmRequest(bloodId, bloodType, quantity) {
+        const data = {
+            hospitalId: currentUser.id,
+            bloodType: bloodType,
+            quantity: quantity,
+            patientName: document.getElementById('requestPatientName').value,
+            hospitalName: document.getElementById('requestHospitalName').value,
+            contact: document.getElementById('requestContact').value,
+            note: document.getElementById('requestNote').value
+        };
+
+        // In a real app, send this to backend
+        showMessage('✅ Blood request submitted! Contact the blood bank for confirmation.', 'success');
+    }
+
+    function findNearbyHospitals() {
+        const location = document.getElementById('hospitalLocation').value;
+        if (!location) {
+            showMessage('Please enter your location', 'error');
+            return;
+        }
+
+        // Use Nominatim (free OpenStreetMap geocoding) to get coordinates
+        const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`;
+        
+        fetch(nominatimUrl)
+            .then(response => response.json())
+            .then(results => {
+                if (results.length === 0) {
+                    showMessage('❌ Location not found. Please try another city.', 'error');
+                    return;
+                }
+
+                const userLocation = [parseFloat(results[0].lat), parseFloat(results[0].lon)];
+                
+                // Clear previous markers
+                if (map) {
+                    map.eachLayer(layer => {
+                        if (layer instanceof L.Marker) {
+                            map.removeLayer(layer);
+                        }
+                    });
+                }
+
+                // Initialize map at user's location
+                if (!map) {
+                    map = L.map('map').setView(userLocation, 13);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap contributors',
+                        maxZoom: 19
+                    }).addTo(map);
+                } else {
+                    map.setView(userLocation, 13);
+                }
+
+                // Display hospitals
+                displayHospitalsWithMarkers(location, userLocation);
+            })
+            .catch(err => {
+                console.error('Geocoding error:', err);
+                showMessage('Could not find location. Showing sample hospitals.', 'success');
+                displayMockHospitals(location);
+            });
+    }
+
+    function displayHospitalsWithMarkers(location, userLocation) {
+        const hospitals = [
+            {
+                name: 'City Medical Hospital',
+                address: location + ', Main Street',
+                phone: '+91-9876543210',
+                lat: userLocation[0] + 0.01,
+                lng: userLocation[1] + 0.01,
+                blood: 'O+, A+, B+',
+                hours: '24/7'
+            },
+            {
+                name: 'General Healthcare Center',
+                address: location + ', Park Road',
+                phone: '+91-9876543211',
+                lat: userLocation[0] - 0.015,
+                lng: userLocation[1] + 0.012,
+                blood: 'O-, AB+, AB-',
+                hours: '24/7'
+            },
+            {
+                name: 'Emergency Blood Bank',
+                address: location + ', Hospital Lane',
+                phone: '+91-9876543212',
+                lat: userLocation[0] + 0.008,
+                lng: userLocation[1] - 0.015,
+                blood: 'All types',
+                hours: '24/7'
+            }
+        ];
+
+        let html = '';
+        
+        // Add markers to map
+        hospitals.forEach((hospital, index) => {
+            // Create marker
+            const marker = L.marker([hospital.lat, hospital.lng]).addTo(map);
+            marker.bindPopup(`<strong>${hospital.name}</strong><br>${hospital.address}<br>📞 ${hospital.phone}`);
+            
+            // Calculate distance
+            const distance = calculateDistanceLeaflet(
+                userLocation[0], 
+                userLocation[1],
+                hospital.lat,
+                hospital.lng
+            );
+
+            html += `
+                <div class="hospital-card">
+                    <h3>${hospital.name}</h3>
+                    <div class="hospital-info">
+                        <div class="info-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            ${hospital.address}
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-phone"></i>
+                            <a href="tel:${hospital.phone}">${hospital.phone}</a>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-road"></i>
+                            ${distance.toFixed(1)} km away
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-clock"></i>
+                            🟢 Open Now
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-droplet"></i>
+                            Blood Available: ${hospital.blood}
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" style="margin-top: 10px; width: 100%;">
+                        Contact Hospital
+                    </button>
+                </div>
+            `;
+        });
+
+        document.getElementById('hospitalsList').innerHTML = html;
+        showMessage(`✅ Found ${hospitals.length} hospitals near ${location}`, 'success');
+    }
+
+    function calculateDistanceLeaflet(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Earth's radius in km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    function initMap() {
+        // Initialize OpenStreetMap with Leaflet
+        const defaultCenter = [28.6139, 77.2090]; // New Delhi [lat, lng]
+        
+        if (!map) {
+            map = L.map('map').setView(defaultCenter, 12);
+            
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+        }
+    }
+
+    function showMessage(msg, type) {
+        const messageDiv = document.getElementById('message');
+        messageDiv.className = `message show ${type}`;
+        messageDiv.textContent = msg;
+
+        setTimeout(() => {
+            messageDiv.classList.remove('show');
+        }, 4000);
+    }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'Blood_Bank.html';
+        }
+
+        // Chatbot Functions
+        function toggleChatbot() {
+            const container = document.getElementById('chatbotContainer');
+            container.classList.toggle('active');
+            if (container.classList.contains('active')) {
+                document.getElementById('chatbotInput').focus();
+            }
+        }
+
+        function handleChatbotKeypress(e) {
+            if (e.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chatbotInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Add user message to chat
+            addChatMessage(message, 'user');
+            input.value = '';
+
+            // Show loading state
+            showChatbotLoading();
+
+            try {
+                const response = await fetch(`${API_URL}/chatbot/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: message,
+                        userId: currentUser.id
+                    })
+                });
+
+                const data = await response.json();
+                removeChatbotLoading();
+
+                if (response.ok) {
+                    addChatMessage(data.message, 'bot');
+                } else {
+                    addChatMessage('Sorry, I encountered an error. Please try again.', 'bot');
+                }
+            } catch (error) {
+                removeChatbotLoading();
+                addChatMessage('Sorry, I\'m not available right now. Please try again later.', 'bot');
+                console.error('Chatbot Error:', error);
+            }
+        }
+
+        function addChatMessage(message, sender) {
+            const messagesDiv = document.getElementById('chatbotMessages');
+            const messageItem = document.createElement('div');
+            messageItem.className = `message-item ${sender}`;
+
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.textContent = message;
+
+            messageItem.appendChild(bubble);
+            messagesDiv.appendChild(messageItem);
+
+            // Scroll to bottom
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function showChatbotLoading() {
+            const messagesDiv = document.getElementById('chatbotMessages');
+            const loadingItem = document.createElement('div');
+            loadingItem.className = 'message-item bot';
+            loadingItem.id = 'chatbot-loading';
+
+            const loadingBubble = document.createElement('div');
+            loadingBubble.className = 'message-bubble';
+            loadingBubble.innerHTML = '<div class="chatbot-loading"><span></span><span></span><span></span></div>';
+
+            loadingItem.appendChild(loadingBubble);
+            messagesDiv.appendChild(loadingItem);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function removeChatbotLoading() {
+            const loading = document.getElementById('chatbot-loading');
+            if (loading) {
+                loading.remove();
+            }
+        }
+    </script>
+
+<!-- Chatbot Widget -->
+<div class="chatbot-widget">
+    <button class="chatbot-toggle" id="chatbotToggle" onclick="toggleChatbot()">
+        <i class="fas fa-comments"></i>
+    </button>
+    <div class="chatbot-container" id="chatbotContainer">
+        <div class="chatbot-header">
+            <h3>
+                <i class="fas fa-robot"></i>
+                Blood Bank Assistant
+            </h3>
+            <button class="chatbot-close" onclick="toggleChatbot()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="chatbot-messages" id="chatbotMessages">
+            <div class="message-item bot">
+                <div class="message-bubble">
+                    👋 Hi! I'm your Blood Bank Assistant. I can help you with:
+                    <br><br>
+                    • Blood type information & compatibility
+                    <br>• Donation eligibility & procedures
+                    <br>• Emergency blood requests
+                    <br>• Hospital locations
+                    <br>• General FAQs
+                    <br><br>
+                    How can I help you today?
+                </div>
+            </div>
+        </div>
+        <div class="chatbot-input-area">
+            <input 
+                type="text" 
+                class="chatbot-input" 
+                id="chatbotInput" 
+                placeholder="Ask me anything..."
+                onkeypress="handleChatbotKeypress(event)"
+            >
+            <button class="chatbot-send" onclick="sendChatMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blood Bank Login</title>
+
+    <style>
+        
+        body{
+            font-family: Arial, sans-serif;
+            background:
+                linear-gradient(rgba(120, 0, 0, 0.65), rgba(0, 0, 0, 0.7)),
+                url("blood-bg.jpg") no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            width: 360px;
+            border-radius: 14px;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+        }
+
+        h2 {
+            text-align: center;
+            color: #c62828;
+            margin-bottom: 25px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 15px;
+            display: block;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 25px;
+            padding: 12px;
+            background: #c62828;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #a81f1f;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .links a {
+            color: #c62828;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>🩸 Blood Bank Login</h2>
+
+    <label>Email Address</label>
+    <input type="email" id="email" placeholder="example@gmail.com">
+
+    <label>Password</label>
+    <input type="password" id="password" placeholder="Minimum 8 characters">
+
+    <button onclick="loginUser()">Login</button>
+
+    <div class="links">
+        <p>New user? <a href="Registration.html">Register here</a></p>
+    </div>
+</div>
+
+<script>
+async function loginUser() {
+
+    let email = document.getElementById("email").value.trim();
+    let password = document.getElementById("password").value;
+
+    // EMAIL VALIDATION
+    let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (email === "") {
+        alert("⚠ Please enter your email");
+        return;
+    }
+    if (!emailRegex.test(email)) {
+        alert("❌ Your email is not valid");
+        return;
+    }
+
+    // PASSWORD VALIDATION
+    if (password === "") {
+        alert("⚠ Please enter your password");
+        return;
+    }
+    if (password.length < 8) {
+        alert("❌ Password must be at least 8 characters");
+        return;
+    }
+
+    // Send to backend
+    try {
+        const response = await fetch('http://localhost:5000/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert("✅ Login Successful!\nWelcome " + data.user.fullName + " 🩸");
+            
+            // Store token and user info
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+
+            // Redirect to dashboard
+            setTimeout(() => {
+                window.location.href = "dashboard.html";
+            }, 1500);
+        } else {
+            alert("❌ " + (data.msg || 'Login failed'));
+        }
+    } catch (error) {
+        alert("❌ Error: " + error.message);
+    }
+}
+</script>
+
+</body>
+</html>

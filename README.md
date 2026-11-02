@@ -1,4 +1,4 @@
-# 🩸 Smart Blood Bank Management System
+# 🩸 BloodSync - Smart Blood Bank Management System
 
 A full-stack blood bank management system with registration, login, and blood inventory management.
 
